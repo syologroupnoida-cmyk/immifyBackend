@@ -5,6 +5,8 @@ import { Lead } from "../models/lead.model.js";
 import cloudinary from "cloudinary";
 import { Payment } from "../models/lead.payment.model.js";
 import bcrypt from 'bcrypt'
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { AgentService } from "../models/agent.service.model.js";
 
 
 export const AgentSignup = TryCatch(async (req, res, next) => {
@@ -468,3 +470,114 @@ export const AgentGetPurchasedLead = TryCatch(async (req, res, next) => {
         });
 });
 
+
+
+export const AgentAddServices=TryCatch(async (req, res, next)=>{
+    const {serviceTitle, price, durationInDays, description, location, category} = req.body;
+    
+    if(!serviceTitle || !price || !durationInDays || !description || !location || !category){
+        return next(new ErrorHandler("Please provide all required feilds", 400))
+    }
+
+
+    let images = []
+      if (req.files && req.files.length > 0) {
+
+      for (const file of req.files) {
+
+        const uploadedImage = await uploadToCloudinary(
+          file,
+          "immify/services"
+        );
+      
+        images.push({
+          public_id: uploadedImage.public_id,
+          url: uploadedImage.url,
+        });
+
+      }
+
+    }
+
+    console.log('images',images)
+     // create service
+    const service = await AgentService.create({
+
+      serviceTitle,
+      price,
+      durationInDays,
+      description,
+      location,
+      category,
+      images,
+      agentId: req.agent?.id || null,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Service created successfully",
+      data: service,
+    });
+})
+
+export const AgentGetServicesByAgent=TryCatch(async (req, res, next)=>{
+    
+   const { page = 1, limit = 9, search = "", country = "" } = req.query;
+   
+    const filter = { 
+    agentId: req.agent.id  
+    };
+  
+     console.log('agent', req.agent._id);
+
+  if (search) {
+    filter.$or = [
+      { serviceTitle: { $regex: search, $options: 'i' } },
+      { location: { $regex: search, $options: 'i' } },
+      { category: { $regex: search, $options: 'i' } }
+    ];
+  }
+  
+    if (country) {
+        filter.location = { $regex: country, $options: 'i' };
+    }
+
+    const services = await AgentService.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+
+     console.log('services',services)
+
+   return res.status(200).json({success:true,data:services});
+});
+
+
+
+export const AgentGetServicesAll=TryCatch(async (req, res, next)=>{
+    
+   const { page = 1, limit = 9, search = "", country = "" } = req.query;
+   
+    let filter;
+  
+  if (search) {
+    filter.$or = [
+      { serviceTitle: { $regex: search, $options: 'i' } },
+      { location: { $regex: search, $options: 'i' } },
+      { category: { $regex: search, $options: 'i' } }
+    ];
+  }
+  
+    if (country) {
+        filter.location = { $regex: country, $options: 'i' };
+    }
+
+    const services = await AgentService.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+
+     console.log('services',services)
+
+   return res.status(200).json({success:true,data:services});
+});

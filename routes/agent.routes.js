@@ -11,9 +11,13 @@ import {
   AgentGetCurrentWeekLeadCount,
   AgentBuyLead,
   AgentGetPurchasedLead,
+  AgentAddServices,
+  AgentGetServicesByAgent,
+  AgentGetServicesAll,
 } from "../controllers/agent.controller.js";
 
 import agentAuth from "../middleware/agentAuth.js";
+import upload from "../utils/multer.js";
 
 const router = express.Router();
 
@@ -50,5 +54,15 @@ router.post("/buy/:leadId", agentAuth, AgentBuyLead);
 
 // Get purchased leads
 router.get("/lead", agentAuth, AgentGetPurchasedLead);
+
+
+router.get("/servicesAll", AgentGetServicesAll);
+
+router.get("/services", agentAuth, AgentGetServicesByAgent);
+
+
+
+
+router.post("/services", upload.array('images',8), agentAuth,AgentAddServices);
 
 export default router;

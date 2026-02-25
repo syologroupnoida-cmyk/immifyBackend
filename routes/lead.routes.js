@@ -10,7 +10,7 @@ router.route('/').get(AdminGetAllLead)
 router.route('/new').get(GetAllLeadToSale)
 router.route('/countrys').get(GetAllLeadCountry)
 router.route('/:leadId').get(AdminGetSingleLead)
-router.route('/test/sold').get(AdminGetAllSoldLead)
+router.route('/test/sold').get(AdminGetAllSoldLead) 
 
 router.route('/:leadId').put(adminAuth, AdminUpdateLeadPrice)
 router.route('/:leadId').delete(adminAuth, AdminDeleteLead)

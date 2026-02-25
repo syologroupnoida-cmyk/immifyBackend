@@ -104,6 +104,8 @@ export const UserSignup = TryCatch(async (req, res, next) => {
 export const UserLogin = TryCatch(async (req, res, next) => {
     const { email, password } = req.body;
 
+    console.log(email,password)
+
     if (!email || !password) {
         return next(new ErrorHandler("Please provide all required fields", 400));
     }
@@ -129,6 +131,7 @@ export const UserLogin = TryCatch(async (req, res, next) => {
     user.sessionToken = token; // Set session token
     await user.save({ validateBeforeSave: false });
 
+    // console.log('token',token);
     // Set cookie with token
     return res
         .status(200)
@@ -140,7 +143,9 @@ export const UserLogin = TryCatch(async (req, res, next) => {
         })
         .json({
             success: true,
-            message: "Login successful", user
+            message: "Login successful", 
+            user,
+            token
         });
 });
 
